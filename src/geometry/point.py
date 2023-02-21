@@ -1,7 +1,23 @@
 """Geometrical Points."""
-from abc import ABCMeta
-from . import DB
-from .entity import GeometryEntity
+from abc import ABCMeta, abstractmethod
+from entity import GeometryEntity
+
+
+class AbstractRevitObject(object):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def DistanceTo(self, other):
+        # type: (AbstractRevitObject) -> AbstractRevitObject
+        pass
+
+
+class AbstractRevitUV(AbstractRevitObject):
+    pass
+
+
+class AbstractRevitXYZ(AbstractRevitObject):
+    pass
 
 
 class ClassPropertyDescriptor(object):
@@ -40,9 +56,8 @@ class Point(GeometryEntity):
 
     __metaclass__ = ABCMeta
 
-    _ambient_dimension = 0
     _coordinates = tuple()
-    _rvt_obj = None
+    _rvt_obj = None  # type: AbstractRevitObject
     revit_type = None
 
     def __new__(cls, *args, **kwargs):
@@ -50,14 +65,6 @@ class Point(GeometryEntity):
             raise TypeError('Cannot create instances of Point '
                             'because it has no public constructors.')
         return super(Point, cls).__new__(cls)
-
-    def __init__(self, *args):
-        if not args:
-            args = self._get_zero_coords()
-            return self.__init__(*args)
-
-        self._validate_attr_qty(self._ambient_dimension, len(args))
-        self._coordinates = (args)
 
     def __str__(self):
         return self.__class__.__name__ + str(self._coordinates)
@@ -100,18 +107,19 @@ class Point(GeometryEntity):
 class Point2D(Point):
     """Point in a 2-dimensional space."""
 
-    _ambient_dimension = 2
-
-    def __init__(self, *args):
-        super(Point2D, self).__init__(*args)
-        self._rvt_obj = DB.UV(*args)
+    def __init__(self, uv_revit_point):
+        # type: (AbstractRevitUV) -> None
+        self._rvt_obj = uv_revit_point
+        self._coordinates = (self._rvt_obj.U,
+                             self._rvt_obj.V)
 
 
 class Point3D(Point):
     """Point in a 3-dimensional space."""
 
-    _ambient_dimension = 3
-
-    def __init__(self, *args):
-        super(Point3D, self).__init__(*args)
-        self._rvt_obj = DB.XYZ(*args)
+    def __init__(self, xyz_revit_point):
+        # type: (AbstractRevitXYZ) -> None
+        self._rvt_obj = xyz_revit_point
+        self._coordinates = (self._rvt_obj.X,
+                             self._rvt_obj.Y,
+                             self._rvt_obj.Z)

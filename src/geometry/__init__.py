@@ -1,14 +1,9 @@
-"""
-Geometry primitives wrapped around Revit geometry objects.
-"""
+"""Geometry primitives wrapped around Revit geometry objects."""
 
-import clr
-
-clr.AddReference("RevitAPI")
-from Autodesk.Revit import DB
-
+from entity import GeometryEntity
 from point import Point, Point2D, Point3D
 
 __all__ = [
+    'GeometryEntity',
     'Point', 'Point2D', 'Point3D'
 ]
