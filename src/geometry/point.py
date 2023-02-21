@@ -1,54 +1,27 @@
 """Geometrical Points."""
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 from entity import GeometryEntity
 
 
-class AbstractRevitObject(object):
-    __metaclass__ = ABCMeta
+class AbstractRevitCoordinates(object):
 
     @abstractmethod
     def DistanceTo(self, other):
-        # type: (AbstractRevitObject) -> AbstractRevitObject
+        # type: (AbstractRevitCoordinates) -> float
+        pass
+
+    @abstractproperty
+    def Zero(self, other):
+        # type: (AbstractRevitCoordinates) -> AbstractRevitCoordinates
         pass
 
 
-class AbstractRevitUV(AbstractRevitObject):
+class AbstractRevitUV(AbstractRevitCoordinates):
     pass
 
 
-class AbstractRevitXYZ(AbstractRevitObject):
+class AbstractRevitXYZ(AbstractRevitCoordinates):
     pass
-
-
-class ClassPropertyDescriptor(object):
-
-    def __init__(self, fget, fset=None):
-        self.fget = fget
-        self.fset = fset
-
-    def __get__(self, obj, class_=None):
-        if class_ is None:
-            class_ = type(obj)
-        return self.fget.__get__(obj, class_)()
-
-    def __set__(self, obj, value):
-        if not self.fset:
-            raise AttributeError("can't set attribute")
-        type_ = type(obj)
-        return self.fset.__get__(obj, type_)(value)
-
-    def setter(self, func):
-        if not isinstance(func, (classmethod, staticmethod)):
-            func = classmethod(func)
-        self.fset = func
-        return self
-
-
-def classproperty(func):
-    if not isinstance(func, (classmethod, staticmethod)):
-        func = classmethod(func)
-
-    return ClassPropertyDescriptor(func)
 
 
 class Point(GeometryEntity):
@@ -57,7 +30,7 @@ class Point(GeometryEntity):
     __metaclass__ = ABCMeta
 
     _coordinates = tuple()
-    _rvt_obj = None  # type: AbstractRevitObject
+    _rvt_obj = None  # type: AbstractRevitCoordinates
     revit_type = None
 
     def __new__(cls, *args, **kwargs):
@@ -71,22 +44,11 @@ class Point(GeometryEntity):
 
     def __abs__(self):
         """Returns the distance between this point and the origin."""
-        # origin = Point([0]*len(self))
-        # return Point.distance(origin, self)
-        pass
+        return self.distance_to(self.origin)
 
     def distance_to(self, other):
         # type: (Point) -> float
         return self._rvt_obj.DistanceTo(other._rvt_obj)
-
-    @classmethod
-    def _get_origin_point(cls):
-        zeros = cls._get_zero_coords()
-        return cls(*zeros)
-
-    @classmethod
-    def _get_zero_coords(cls):
-        return tuple(0 for _ in range(cls._ambient_dimension))
 
     @property
     def coordinates(self):
@@ -98,18 +60,18 @@ class Point(GeometryEntity):
         """Gets the revit object which stands behind this wrap."""
         return self._rvt_obj
 
-    @classproperty
-    def origin(cls):
+    @property
+    def origin(self):
         """A point of all zero coordinates."""
-        return cls._get_origin_point()
+        return self.__class__(self._rvt_obj.Zero)
 
 
 class Point2D(Point):
     """Point in a 2-dimensional space."""
 
-    def __init__(self, uv_revit_point):
+    def __init__(self, revit_uv):
         # type: (AbstractRevitUV) -> None
-        self._rvt_obj = uv_revit_point
+        self._rvt_obj = revit_uv
         self._coordinates = (self._rvt_obj.U,
                              self._rvt_obj.V)
 
@@ -117,9 +79,9 @@ class Point2D(Point):
 class Point3D(Point):
     """Point in a 3-dimensional space."""
 
-    def __init__(self, xyz_revit_point):
+    def __init__(self, revit_xyz):
         # type: (AbstractRevitXYZ) -> None
-        self._rvt_obj = xyz_revit_point
+        self._rvt_obj = revit_xyz
         self._coordinates = (self._rvt_obj.X,
                              self._rvt_obj.Y,
                              self._rvt_obj.Z)
