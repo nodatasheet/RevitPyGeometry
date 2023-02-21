@@ -65,7 +65,7 @@ class Point(GeometryEntity):
     @property
     def coordinates(self):
         # type: () -> tuple[float]
-        return self.coordinates
+        return self._coordinates
 
     @property
     def revit_object(self):
