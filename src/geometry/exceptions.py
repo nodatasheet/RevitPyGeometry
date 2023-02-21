@@ -40,10 +40,3 @@ class TypeValidationException(ValidationException):
     def message(self, value):
         # type: (str) -> None
         self._message = value
-
-
-def raise_wrong_attr_qty(qty_expected, qty_got):
-    # type: (int, int) -> None
-    raise TypeError(
-        'expected {} arguments, got {}'.format(qty_expected, qty_got)
-    )
