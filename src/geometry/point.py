@@ -58,10 +58,9 @@ class Point(GeometryEntity):
         # return Point.distance(origin, self)
         pass
 
-    def distance_to(self, other_point):
+    def distance_to(self, other):
         # type: (Point) -> float
-        # return itemgetter (self._rvt_obj)
-        pass
+        return self._rvt_obj.DistanceTo(other._rvt_obj)
 
     @classmethod
     def _get_origin_point(cls):
