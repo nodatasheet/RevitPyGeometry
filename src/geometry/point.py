@@ -25,8 +25,8 @@ class Point(GeometryEntity):
 
     @property
     def revit_object(self):
-        """Gets the revit object which stands behind this class."""
-        return self.__rvt_obj
+        """Gets the revit object which stands behind this wrap."""
+        return self._rvt_obj
 
 
 class Point2D(Point):
