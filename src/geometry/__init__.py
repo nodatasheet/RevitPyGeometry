@@ -1,22 +1,14 @@
 """
 Geometry primitives wrapped around Revit geometry objects.
-
 """
 
-from geometry.exceptions import TypeValidationException
+import clr
 
+clr.AddReference("RevitAPI")
+from Autodesk.Revit import DB
 
-class GeometryEntity(object):
-    """The base class for all geometrical entities.
+from point import Point2D, Point3D
 
-    This class does not represent any particular geometric entity, it only
-    provides the implementation of some methods common to all subclasses.
-
-    """
-
-    def _validate_type(self, obj, expected_type):
-        # type: (object, type) -> None
-        if not isinstance(obj, expected_type):
-            raise TypeValidationException(
-                'Expected <{}>, got <{}>'.format(expected_type.__name__,
-                                                 type(obj).__name__))
+__all__ = [
+    'Point2D', 'Point3D'
+]
