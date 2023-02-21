@@ -2,7 +2,8 @@
 all derived geometrical entities.
 """
 
-from exceptions import raise_wrong_attr_qty, raise_wrong_type
+from exceptions import raise_wrong_attr_qty
+from exceptions import TypeValidationException
 
 
 class GeometryEntity(object):
@@ -11,7 +12,7 @@ class GeometryEntity(object):
     def _validate_type(self, obj, expected_type):
         # type: (object, type) -> None
         if not isinstance(obj, expected_type):
-            raise_wrong_type(obj, expected_type)
+            raise TypeValidationException(type(obj), expected_type)
 
     def _validate_attr_qty(self, qty_expected, qty_got):
         # type: (int, int) -> None

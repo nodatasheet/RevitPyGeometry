@@ -7,8 +7,8 @@ import clr
 clr.AddReference("RevitAPI")
 from Autodesk.Revit import DB
 
-from point import Point2D, Point3D
+from point import Point, Point2D, Point3D
 
 __all__ = [
-    'Point2D', 'Point3D'
+    'Point', 'Point2D', 'Point3D'
 ]

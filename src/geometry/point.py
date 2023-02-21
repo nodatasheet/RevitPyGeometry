@@ -1,5 +1,5 @@
 """Geometrical Points."""
-
+from abc import ABCMeta
 from . import DB
 from .entity import GeometryEntity
 
@@ -38,14 +38,24 @@ def classproperty(func):
 class Point(GeometryEntity):
     """Base class for points."""
 
+    __metaclass__ = ABCMeta
+
     _ambient_dimension = 0
     _coordinates = tuple()
     _rvt_obj = None
+    revit_type = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls is Point:
+            raise TypeError('Cannot create instances of Point '
+                            'because it has no public constructors.')
+        return super(Point, cls).__new__(cls)
 
     def __init__(self, *args):
         if not args:
             args = self._get_zero_coords()
             return self.__init__(*args)
+
         self._validate_attr_qty(self._ambient_dimension, len(args))
         self._coordinates = (args)
 
