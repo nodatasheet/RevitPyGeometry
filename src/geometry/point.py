@@ -18,6 +18,16 @@ class Point(GeometryEntity):
     def __str__(self):
         return self.__class__.__name__ + str(self._coordinates)
 
+    def __abs__(self):
+        """Returns the distance between this point and the origin."""
+        # origin = Point([0]*len(self))
+        # return Point.distance(origin, self)
+        pass
+
+    def _get_origin_point(self):
+        zeros = tuple(0 for _ in range(self._ambient_dimension))
+        return self.__class__(*zeros)
+
     @property
     def coordinates(self):
         # type: () -> tuple[float]
@@ -27,6 +37,11 @@ class Point(GeometryEntity):
     def revit_object(self):
         """Gets the revit object which stands behind this wrap."""
         return self._rvt_obj
+
+    @property
+    def origin(self):
+        """A point of all zero coordinates."""
+        return self._get_origin_point()
 
 
 class Point2D(Point):
