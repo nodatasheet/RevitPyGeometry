@@ -46,11 +46,17 @@ class Point(GeometryEntity):
         """Returns the distance between this point and the origin."""
         return self.distance_to(self.origin)
 
+    def __contains__(self, item):
+        return item in self._coordinates
+
     def __getitem__(self, key):
         return self._coordinates[key]
 
     def __iter__(self):
         return self._coordinates.__iter__()
+
+    def __len__(self):
+        return len(self._coordinates)
 
     def distance_to(self, other):
         # type: (Point) -> float
