@@ -11,20 +11,35 @@ class ValidationException(GeometryException):
     pass
 
 
-class TypeError(GeometryException):
-    pass
+class TypeValidationException(ValidationException):
 
+    _message = None
 
-class TypeValidationException(GeometryException):
-    pass
+    def __init__(self, expected_type, current_type):
+        # type: (type, type) -> None
+        self._expected_type = expected_type
+        self._current_type = current_type
 
+        self._expected_type_name = expected_type.__name__
+        self._current_type_name = current_type.__name__
 
-def raise_wrong_type(obj, expected_type):
-    # type: (object, type) -> None
-    raise TypeValidationException(
-        'Expected <{}>, got <{}>'.format(expected_type.__name__,
-                                         type(obj).__name__)
-    )
+    def __str__(self):
+        # type: () -> str
+        if self._message is None:
+            self.message = 'Expected <{}>, got <{}>'.format(
+                self._expected_type_name, self._current_type_name)
+
+        return self._message
+
+    @property
+    def message(self):
+        # type: () -> str
+        return self._message
+
+    @message.setter
+    def message(self, value):
+        # type: (str) -> None
+        self._message = value
 
 
 def raise_wrong_attr_qty(qty_expected, qty_got):
