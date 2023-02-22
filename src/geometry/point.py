@@ -6,22 +6,105 @@ from entity import GeometryEntity
 class AbstractRevitCoordinates(object):
 
     @abstractmethod
+    def Add(self, other):
+        # type: (AbstractRevitCoordinates) -> AbstractRevitCoordinates
+        pass
+
+    @abstractmethod
+    def AngleTo(self, other):
+        # type: (AbstractRevitCoordinates) -> AbstractRevitCoordinates
+        pass
+
+    @abstractmethod
+    def CrossProduct(self, other):
+        # type: (AbstractRevitCoordinates) -> float
+        pass
+
+    @abstractmethod
+    def Divide(self, value):
+        # type: (float) -> AbstractRevitCoordinates
+        pass
+
+    @abstractmethod
     def DistanceTo(self, other):
         # type: (AbstractRevitCoordinates) -> float
         pass
 
-    @abstractproperty
-    def Zero(self, other):
+    @abstractmethod
+    def DotProduct(self, other):
+        # type: (AbstractRevitCoordinates) -> float
+        pass
+
+    @abstractmethod
+    def IsAlmostEqualTo(self, other):
+        # type: (AbstractRevitCoordinates) -> bool
+        pass
+
+    @abstractmethod
+    def IsUnitLength(self):
+        # type: () -> bool
+        pass
+
+    @abstractmethod
+    def IsZeroLength(self):
+        # type: () -> bool
+        pass
+
+    @abstractmethod
+    def Multiply(self, value):
+        # type: (float) -> AbstractRevitCoordinates
+        pass
+
+    @abstractmethod
+    def Negate(self):
+        # type: () -> AbstractRevitCoordinates
+        pass
+
+    @abstractmethod
+    def Normalize(self):
+        # type: () -> AbstractRevitCoordinates
+        pass
+
+    @abstractmethod
+    def Subtract(self, other):
         # type: (AbstractRevitCoordinates) -> AbstractRevitCoordinates
+        pass
+
+    @abstractproperty
+    def Zero(self):
+        # type: () -> AbstractRevitCoordinates
         pass
 
 
 class AbstractRevitUV(AbstractRevitCoordinates):
-    pass
+
+    @abstractproperty
+    def U(self):
+        # type: () -> float
+        pass
+
+    @abstractproperty
+    def V(self):
+        # type: () -> float
+        pass
 
 
 class AbstractRevitXYZ(AbstractRevitCoordinates):
-    pass
+
+    @abstractproperty
+    def X(self):
+        # type: () -> float
+        pass
+
+    @abstractproperty
+    def Y(self):
+        # type: () -> float
+        pass
+
+    @abstractproperty
+    def Z(self):
+        # type: () -> float
+        pass
 
 
 class Point(GeometryEntity):
@@ -58,9 +141,20 @@ class Point(GeometryEntity):
     def __len__(self):
         return len(self._coordinates)
 
+    def add(self, other):
+        # type: (Point) -> Point
+        """Add other to self by incrementing self's coordinates by
+        those of other.
+        """
+        return self._rvt_obj.Add(other._rvt_obj)
+
     def distance_to(self, other):
         # type: (Point) -> float
         return self._rvt_obj.DistanceTo(other._rvt_obj)
+
+    def multiply(self, other):
+        # type: (float) -> Point
+        return self._rvt_obj.Multiply(other._rvt_obj)
 
     @property
     def coordinates(self):
