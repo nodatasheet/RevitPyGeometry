@@ -17,7 +17,7 @@ class AbstractRevitCoordinates(object):
 
     @abstractmethod
     def CrossProduct(self, other):
-        # type: (AbstractRevitCoordinates) -> float
+        # type: (AbstractRevitCoordinates) -> AbstractRevitCoordinates
         pass
 
     @abstractmethod
@@ -183,8 +183,10 @@ class Point(GeometryEntity):
         return self._rvt_obj.DotProduct(other._rvt_obj)
 
     def cross_product(self, other):
-        # type: (Point) -> float
-        return self._rvt_obj.CrossProduct(other._rvt_obj)
+        # type: (Point) -> Point
+        return self._wrap(
+            self._rvt_obj.CrossProduct(other._rvt_obj)
+        )
 
     def multiply(self, other):
         # type: (float) -> Point
