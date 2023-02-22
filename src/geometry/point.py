@@ -141,12 +141,38 @@ class Point(GeometryEntity):
     def __len__(self):
         return len(self._coordinates)
 
-    def add(self, other):
+    def __mul__(self, factor):
+        # type: (float) -> Point
+        """Multiply point's coordinates by a factor."""
+        return self._wrap(
+            self._rvt_obj.Multiply(factor)
+        )
+
+    def __rmul__(self, factor):
+        """Multiply a factor by point's coordinates."""
+        return self.__mul__(factor)
+
+    def __neg__(self):
+        """Negate the point."""
+        return self._wrap(
+            self._rvt_obj.Negate()
+        )
+
+    def __add__(self, other):
         # type: (Point) -> Point
         """Add other to self by incrementing self's coordinates by
         those of other.
         """
-        return self._rvt_obj.Add(other._rvt_obj)
+        return self._wrap(
+            self._rvt_obj.Add(other._rvt_obj)
+        )
+
+    def __sub__(self, other):
+        # type: (Point) -> Point
+        """Subtract two points."""
+        return self._wrap(
+            self._rvt_obj.Subtract(other._rvt_obj)
+        )
 
     def distance_to(self, other):
         # type: (Point) -> float
@@ -154,7 +180,13 @@ class Point(GeometryEntity):
 
     def multiply(self, other):
         # type: (float) -> Point
-        return self._rvt_obj.Multiply(other._rvt_obj)
+        return self._wrap(
+            self._rvt_obj.Multiply(other._rvt_obj)
+        )
+
+    def _wrap(self, rvt_obj):
+        # type: (AbstractRevitCoordinates) -> Point
+        return self.__class__(rvt_obj)
 
     @property
     def coordinates(self):
@@ -169,7 +201,13 @@ class Point(GeometryEntity):
     @property
     def origin(self):
         """A point of all zero coordinates."""
-        return self.__class__(self._rvt_obj.Zero)
+        return self._wrap(self._rvt_obj.Zero)
+
+    @property
+    def is_zero(self):
+        # type: () -> bool
+        """True if every coordinate is zero, False otherwise"""
+        return self._rvt_obj.IsZeroLength()
 
 
 class Point2D(Point):
