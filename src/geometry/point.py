@@ -178,6 +178,14 @@ class Point(GeometryEntity):
         # type: (Point) -> float
         return self._rvt_obj.DistanceTo(other._rvt_obj)
 
+    def dot_product(self, other):
+        # type: (Point) -> float
+        return self._rvt_obj.DotProduct(other._rvt_obj)
+
+    def cross_product(self, other):
+        # type: (Point) -> float
+        return self._rvt_obj.CrossProduct(other._rvt_obj)
+
     def multiply(self, other):
         # type: (float) -> Point
         return self._wrap(
