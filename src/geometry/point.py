@@ -219,6 +219,16 @@ class Point2D(Point):
         self._coordinates = (self._rvt_obj.U,
                              self._rvt_obj.V)
 
+    @property
+    def x(self):
+        # type: () -> float
+        return self._rvt_obj.U
+
+    @property
+    def y(self):
+        # type: () -> float
+        return self._rvt_obj.V
+
 
 class Point3D(Point):
     """Point in a 3-dimensional space."""
@@ -229,3 +239,18 @@ class Point3D(Point):
         self._coordinates = (self._rvt_obj.X,
                              self._rvt_obj.Y,
                              self._rvt_obj.Z)
+
+    @property
+    def x(self):
+        # type: () -> float
+        return self._rvt_obj.X
+
+    @property
+    def y(self):
+        # type: () -> float
+        return self._rvt_obj.Y
+
+    @property
+    def z(self):
+        # type: () -> float
+        return self._rvt_obj.Z
