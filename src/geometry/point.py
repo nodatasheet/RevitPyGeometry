@@ -278,6 +278,12 @@ class Point2D(Point):
 
         Used first method from here:
         https://math.stackexchange.com/a/54657
+
+        p1.x < p2.x
+
+        or p1.x = p2.x and p1.y < p2.y
+
+        Equality is approximate.
         """
         self._validate_type(other, type(self))
 
