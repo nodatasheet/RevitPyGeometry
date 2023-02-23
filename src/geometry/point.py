@@ -174,6 +174,49 @@ class Point(GeometryEntity):
             self._rvt_obj.Subtract(other._rvt_obj)
         )
 
+    def __lt__(self, other):
+        # type: (Point) -> bool
+        raise NotImplementedError(
+            'This method should be overwritten in child classes')
+
+    def __eq__(self, other):
+        # type: (Point) -> bool
+        """Check points equality using `is_almost_equal_to()` method
+        with the default tolerance.
+
+        For more precise equality, use `is_almost_equal_to()`
+        with specified tolerance.
+        """
+        return self.is_almost_equal_to(other)
+
+    def __ne__(self, other):
+        # type: (Point) -> bool
+        return not self.__eq__(other)
+
+    def __gt__(self, other):
+        # type: (Point) -> bool
+        return not self.__lt__(other) and self.__ne__(other)
+
+    def __le__(self, other):
+        # type: (Point) -> bool
+        return self.__lt__(other) or self.__eq__(other)
+
+    def __ge__(self, other):
+        # type: (Point) -> bool
+        return not self.__lt__(other)
+
+    def is_almost_equal_to(self, other, tolerance=None):
+        # type: (Point, float) -> bool
+        """Checks whether this point and other point are the same
+        withing a specified tolerance.
+
+        If no tolerance specified, used Revit default tolerance
+        of points comparison.
+        """
+        if tolerance is not None:
+            return self._rvt_obj.IsAlmostEqualTo(other._rvt_obj, tolerance)
+        return self._rvt_obj.IsAlmostEqualTo(other._rvt_obj)
+
     def distance_to(self, other):
         # type: (Point) -> float
         return self._rvt_obj.DistanceTo(other._rvt_obj)
@@ -229,6 +272,23 @@ class Point2D(Point):
         self._coordinates = (self._rvt_obj.U,
                              self._rvt_obj.V)
 
+    def __lt__(self, other):
+        # type: (Point) -> bool
+        """Is point smaller than other.
+
+        Used first method from here:
+        https://math.stackexchange.com/a/54657
+        """
+        self._validate_type(other, type(self))
+
+        if self.x < other.x:
+            return True
+
+        if almost_equal(self.x, other.x) and self.y < other.y:
+            return True
+
+        return False
+
     @property
     def x(self):
         # type: () -> float
@@ -250,6 +310,35 @@ class Point3D(Point):
                              self._rvt_obj.Y,
                              self._rvt_obj.Z)
 
+    def __lt__(self, other):
+        # type: (Point) -> bool
+        """Is point smaller than other.
+
+        Used first method from here:
+        https://math.stackexchange.com/a/54657
+
+        p1.x < p2.x
+
+        or p1.x = p2.x and p1.y = p2.y
+
+        or p1.x = p2.x and p1.y = p2.y and p1.z < p2.z
+
+        Equality is approximate.
+        """
+        self._validate_type(other, type(self))
+
+        if self.x < other.x:
+            return True
+
+        if almost_equal(self.x, other.x):
+            if self.y < other.y:
+                return True
+
+            if self.z < other.z and almost_equal(self.y, other.y):
+                return True
+
+        return False
+
     @property
     def x(self):
         # type: () -> float
@@ -264,3 +353,11 @@ class Point3D(Point):
     def z(self):
         # type: () -> float
         return self._rvt_obj.Z
+
+
+def almost_equal(a, b, rel_tol=1e-09, abs_tol=0.0):
+    """A function for testing approximate equality of two numbers.
+    Same as math.isclose in Python v3.5 (and newer)
+    https://www.python.org/dev/peps/pep-0485
+    """
+    return abs(a - b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
