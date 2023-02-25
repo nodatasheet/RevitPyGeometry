@@ -1,12 +1,12 @@
 # RevitPyGeometry
 A collection of utils for Revit geometry written in IronPython.
-___
+
 ## Description
 
 Geometry primitives are wrappers around Revit standard geometry to use existing methods and extend them with custom utils.
 
 [SymPy/geometry](https://docs.sympy.org/latest/modules/geometry/index.html) module is used as a base structure also some for wrappers and utils.
-___
+
 ## Notes
 
 ### Compatibility
