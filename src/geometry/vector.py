@@ -1,114 +1,16 @@
-"""Geometrical Points."""
-from abc import ABCMeta, abstractmethod, abstractproperty
+"""Vectors and Vectors"""
+
+from abc import ABCMeta
+
 from entity import GeometryEntity
+from utils import are_numbers_close
+from abstract_revit import (
+    AbstractRevitCoordinates, AbstractRevitUV, AbstractRevitXYZ
+)
 
 
-class AbstractRevitCoordinates(object):
-
-    @abstractmethod
-    def Add(self, other):
-        # type: (AbstractRevitCoordinates) -> AbstractRevitCoordinates
-        pass
-
-    @abstractmethod
-    def AngleTo(self, other):
-        # type: (AbstractRevitCoordinates) -> AbstractRevitCoordinates
-        pass
-
-    @abstractmethod
-    def CrossProduct(self, other):
-        # type: (AbstractRevitCoordinates) -> AbstractRevitCoordinates
-        pass
-
-    @abstractmethod
-    def Divide(self, value):
-        # type: (float) -> AbstractRevitCoordinates
-        pass
-
-    @abstractmethod
-    def DistanceTo(self, other):
-        # type: (AbstractRevitCoordinates) -> float
-        pass
-
-    @abstractmethod
-    def DotProduct(self, other):
-        # type: (AbstractRevitCoordinates) -> float
-        pass
-
-    @abstractmethod
-    def IsAlmostEqualTo(self, other):
-        # type: (AbstractRevitCoordinates) -> bool
-        pass
-
-    @abstractmethod
-    def IsUnitLength(self):
-        # type: () -> bool
-        pass
-
-    @abstractmethod
-    def IsZeroLength(self):
-        # type: () -> bool
-        pass
-
-    @abstractmethod
-    def Multiply(self, value):
-        # type: (float) -> AbstractRevitCoordinates
-        pass
-
-    @abstractmethod
-    def Negate(self):
-        # type: () -> AbstractRevitCoordinates
-        pass
-
-    @abstractmethod
-    def Normalize(self):
-        # type: () -> AbstractRevitCoordinates
-        pass
-
-    @abstractmethod
-    def Subtract(self, other):
-        # type: (AbstractRevitCoordinates) -> AbstractRevitCoordinates
-        pass
-
-    @abstractproperty
-    def Zero(self):
-        # type: () -> AbstractRevitCoordinates
-        pass
-
-
-class AbstractRevitUV(AbstractRevitCoordinates):
-
-    @abstractproperty
-    def U(self):
-        # type: () -> float
-        pass
-
-    @abstractproperty
-    def V(self):
-        # type: () -> float
-        pass
-
-
-class AbstractRevitXYZ(AbstractRevitCoordinates):
-
-    @abstractproperty
-    def X(self):
-        # type: () -> float
-        pass
-
-    @abstractproperty
-    def Y(self):
-        # type: () -> float
-        pass
-
-    @abstractproperty
-    def Z(self):
-        # type: () -> float
-        pass
-
-
-class Point(GeometryEntity):
-    """Base class for points."""
+class Vector(GeometryEntity):
+    """Base class for vectors."""
 
     __metaclass__ = ABCMeta
 
@@ -117,16 +19,15 @@ class Point(GeometryEntity):
     revit_type = None
 
     def __new__(cls, *args, **kwargs):
-        if cls is Point:
-            raise TypeError('Cannot create instances of Point '
-                            'because it has no public constructors.')
-        return super(Point, cls).__new__(cls)
+        if cls is Vector:
+            raise TypeError('Creating instances of Vector is not allowed.')
+        return super(Vector, cls).__new__(cls)
 
     def __str__(self):
         return self.__class__.__name__ + str(self._coordinates)
 
     def __abs__(self):
-        """Returns the distance between this point and the origin."""
+        """Returns the distance between this vector and the origin."""
         return self.distance_to(self.origin)
 
     def __contains__(self, item):
@@ -142,24 +43,24 @@ class Point(GeometryEntity):
         return len(self._coordinates)
 
     def __mul__(self, factor):
-        # type: (float) -> Point
-        """Multiply point's coordinates by a factor."""
+        # type: (float) -> Vector
+        """Multiply vector's coordinates by a factor."""
         return self._wrap(
             self._rvt_obj.Multiply(factor)
         )
 
     def __rmul__(self, factor):
-        """Multiply a factor by point's coordinates."""
+        """Multiply a factor by vector's coordinates."""
         return self.__mul__(factor)
 
     def __neg__(self):
-        """Negate the point."""
+        """Negate the vector."""
         return self._wrap(
             self._rvt_obj.Negate()
         )
 
     def __add__(self, other):
-        # type: (Point) -> Point
+        # type: (Vector) -> Vector
         """Add other to self by incrementing self's coordinates by
         those of other.
         """
@@ -168,77 +69,82 @@ class Point(GeometryEntity):
         )
 
     def __sub__(self, other):
-        # type: (Point) -> Point
-        """Subtract two points."""
+        # type: (Vector) -> Vector
+        """Subtract two vectors."""
         return self._wrap(
             self._rvt_obj.Subtract(other._rvt_obj)
         )
 
     def __lt__(self, other):
-        # type: (Point) -> bool
-        raise NotImplementedError(
-            'This method should be overwritten in child classes')
+        # type: (Vector) -> bool
+        raise NotImplementedError()
 
     def __eq__(self, other):
-        # type: (Point) -> bool
-        """Check points equality using `is_almost_equal_to()` method
+        # type: (Vector) -> bool
+        """Check vectors equality using `is_almost_equal_to()` method
         with the default tolerance.
 
-        For more precise equality, use `is_almost_equal_to()`
+        For more precise equality, use `is_are_numbers_close_to()`
         with specified tolerance.
         """
         return self.is_almost_equal_to(other)
 
     def __ne__(self, other):
-        # type: (Point) -> bool
+        # type: (Vector) -> bool
         return not self.__eq__(other)
 
     def __gt__(self, other):
-        # type: (Point) -> bool
+        # type: (Vector) -> bool
         return not self.__lt__(other) and self.__ne__(other)
 
     def __le__(self, other):
-        # type: (Point) -> bool
+        # type: (Vector) -> bool
         return self.__lt__(other) or self.__eq__(other)
 
     def __ge__(self, other):
-        # type: (Point) -> bool
+        # type: (Vector) -> bool
         return not self.__lt__(other)
 
+    def to_vector(self):
+        raise NotImplementedError()
+
+    def to_point(self):
+        raise NotImplementedError()
+
     def is_almost_equal_to(self, other, tolerance=None):
-        # type: (Point, float) -> bool
-        """Checks whether this point and other point are the same
+        # type: (Vector, float) -> bool
+        """Checks whether this vector and other vector are the same
         withing a specified tolerance.
 
         If no tolerance specified, used Revit default tolerance
-        of points comparison.
+        of vectors comparison.
         """
         if tolerance is not None:
             return self._rvt_obj.IsAlmostEqualTo(other._rvt_obj, tolerance)
         return self._rvt_obj.IsAlmostEqualTo(other._rvt_obj)
 
     def distance_to(self, other):
-        # type: (Point) -> float
+        # type: (Vector) -> float
         return self._rvt_obj.DistanceTo(other._rvt_obj)
 
     def dot_product(self, other):
-        # type: (Point) -> float
+        # type: (Vector) -> float
         return self._rvt_obj.DotProduct(other._rvt_obj)
 
     def cross_product(self, other):
-        # type: (Point) -> Point
+        # type: (Vector) -> Vector
         return self._wrap(
             self._rvt_obj.CrossProduct(other._rvt_obj)
         )
 
     def multiply(self, other):
-        # type: (float) -> Point
+        # type: (float) -> Vector
         return self._wrap(
             self._rvt_obj.Multiply(other._rvt_obj)
         )
 
     def _wrap(self, rvt_obj):
-        # type: (AbstractRevitCoordinates) -> Point
+        # type: (AbstractRevitCoordinates) -> Vector
         return self.__class__(rvt_obj)
 
     @property
@@ -253,7 +159,7 @@ class Point(GeometryEntity):
 
     @property
     def origin(self):
-        """A point of all zero coordinates."""
+        """A vector of all zero coordinates."""
         return self._wrap(self._rvt_obj.Zero)
 
     @property
@@ -263,8 +169,8 @@ class Point(GeometryEntity):
         return self._rvt_obj.IsZeroLength()
 
 
-class Point2D(Point):
-    """Point in a 2-dimensional space."""
+class Vector2D(Vector):
+    """Vector in a 2-dimensional space."""
 
     def __init__(self, revit_uv):
         # type: (AbstractRevitUV) -> None
@@ -273,8 +179,8 @@ class Point2D(Point):
                              self._rvt_obj.V)
 
     def __lt__(self, other):
-        # type: (Point) -> bool
-        """Is point smaller than other.
+        # type: (Vector) -> bool
+        """Is vector smaller than other.
 
         Used first method from here:
         https://math.stackexchange.com/a/54657
@@ -290,7 +196,7 @@ class Point2D(Point):
         if self.x < other.x:
             return True
 
-        if almost_equal(self.x, other.x) and self.y < other.y:
+        if are_numbers_close(self.x, other.x) and self.y < other.y:
             return True
 
         return False
@@ -306,8 +212,8 @@ class Point2D(Point):
         return self._rvt_obj.V
 
 
-class Point3D(Point):
-    """Point in a 3-dimensional space."""
+class Vector3D(Vector):
+    """Vector in a 3-dimensional space."""
 
     def __init__(self, revit_xyz):
         # type: (AbstractRevitXYZ) -> None
@@ -317,8 +223,8 @@ class Point3D(Point):
                              self._rvt_obj.Z)
 
     def __lt__(self, other):
-        # type: (Point) -> bool
-        """Is point smaller than other.
+        # type: (Vector) -> bool
+        """Is vector smaller than other.
 
         Used first method from here:
         https://math.stackexchange.com/a/54657
@@ -336,11 +242,11 @@ class Point3D(Point):
         if self.x < other.x:
             return True
 
-        if almost_equal(self.x, other.x):
+        if are_numbers_close(self.x, other.x):
             if self.y < other.y:
                 return True
 
-            if self.z < other.z and almost_equal(self.y, other.y):
+            if self.z < other.z and are_numbers_close(self.y, other.y):
                 return True
 
         return False
@@ -361,9 +267,9 @@ class Point3D(Point):
         return self._rvt_obj.Z
 
 
-def almost_equal(a, b, rel_tol=1e-09, abs_tol=0.0):
-    """A function for testing approximate equality of two numbers.
-    Same as math.isclose in Python v3.5 (and newer)
-    https://www.python.org/dev/peps/pep-0485
-    """
-    return abs(a - b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+class Point2D(Vector2D):
+    pass
+
+
+class Point3D(Vector3D):
+    pass
