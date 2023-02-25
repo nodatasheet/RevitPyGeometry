@@ -201,6 +201,9 @@ class Vector2D(Vector):
 
         return False
 
+    def to_point(self):
+        return Point2D(self._rvt_obj)
+
     @property
     def x(self):
         # type: () -> float
@@ -224,7 +227,7 @@ class Vector3D(Vector):
 
     def __lt__(self, other):
         # type: (Vector) -> bool
-        """Is vector smaller than other.
+        """Is self smaller than other.
 
         Used first method from here:
         https://math.stackexchange.com/a/54657
@@ -251,6 +254,9 @@ class Vector3D(Vector):
 
         return False
 
+    def to_point(self):
+        return Point3D(self._rvt_obj)
+
     @property
     def x(self):
         # type: () -> float
@@ -268,8 +274,14 @@ class Vector3D(Vector):
 
 
 class Point2D(Vector2D):
-    pass
+    """Point in a 2-dimensional space."""
+
+    def to_vector(self):
+        return Vector2D(self._rvt_obj)
 
 
 class Point3D(Vector3D):
-    pass
+    """Point in a 3-dimensional space."""
+
+    def to_vector(self):
+        return Vector3D(self._rvt_obj)
