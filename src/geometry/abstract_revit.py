@@ -2,7 +2,11 @@
 from abc import abstractmethod, abstractproperty
 
 
-class AbstractRevitCoordinates(object):
+class AbstractRevitObject(object):
+    pass
+
+
+class AbstractRevitCoordinates(AbstractRevitObject):
 
     @abstractmethod
     def Add(self, other):
@@ -103,4 +107,16 @@ class AbstractRevitXYZ(AbstractRevitCoordinates):
     @abstractproperty
     def Z(self):
         # type: () -> float
+        pass
+
+
+class AbstractRevitTransform(AbstractRevitObject):
+    pass
+
+
+class AbstractRevitCurve(AbstractRevitObject):
+
+    @abstractmethod
+    def ComputeDerivatives(parameter, normalized):
+        # type: (float, bool) -> AbstractRevitTransform
         pass
