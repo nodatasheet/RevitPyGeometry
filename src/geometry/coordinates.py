@@ -1,16 +1,16 @@
-"""Vectors and Vectors"""
+"""Coordinates representing a vector or a point."""
 
 from abc import ABCMeta
 
-from entity import GeometryEntity
+from entities import GeometryEntity
 from utils import are_numbers_close
-from abstract_revit import (
+from revit_abstracts import (
     AbstractRevitCoordinates, AbstractRevitUV, AbstractRevitXYZ
 )
 
 
-class Vector(GeometryEntity):
-    """Base class for vectors."""
+class Coordinates(GeometryEntity):
+    """Base class for coordinates representing a vector or a point."""
 
     __metaclass__ = ABCMeta
 
@@ -19,15 +19,15 @@ class Vector(GeometryEntity):
     revit_type = None
 
     def __new__(cls, *args, **kwargs):
-        if cls is Vector:
-            raise TypeError('Creating instances of Vector is not allowed.')
-        return super(Vector, cls).__new__(cls)
+        if cls is Coordinates:
+            raise TypeError('Creating instances of Base class is not allowed.')
+        return super(Coordinates, cls).__new__(cls)
 
     def __str__(self):
         return self.__class__.__name__ + str(self._coordinates)
 
     def __abs__(self):
-        """Returns the distance between this vector and the origin."""
+        """Returns the distance between these coordinates and the origin."""
         return self.distance_to(self.origin)
 
     def __contains__(self, item):
@@ -43,108 +43,117 @@ class Vector(GeometryEntity):
         return len(self._coordinates)
 
     def __mul__(self, factor):
-        # type: (float) -> Vector
-        """Multiply vector's coordinates by a factor."""
         return self._wrap(
-            self._rvt_obj.Multiply(factor)
+            self.multiply(factor)
         )
 
     def __rmul__(self, factor):
-        """Multiply a factor by vector's coordinates."""
         return self.__mul__(factor)
 
     def __neg__(self):
-        """Negate the vector."""
-        return self._wrap(
-            self._rvt_obj.Negate()
-        )
+        return self.negate()
 
     def __add__(self, other):
-        # type: (Vector) -> Vector
-        """Add other to self by incrementing self's coordinates by
-        those of other.
-        """
-        return self._wrap(
-            self._rvt_obj.Add(other._rvt_obj)
-        )
+        # type: (Coordinates) -> Coordinates
+        return self.add(other)
 
     def __sub__(self, other):
-        # type: (Vector) -> Vector
-        """Subtract two vectors."""
-        return self._wrap(
-            self._rvt_obj.Subtract(other._rvt_obj)
-        )
+        # type: (Coordinates) -> Coordinates
+        return self.substract(other)
 
     def __lt__(self, other):
-        # type: (Vector) -> bool
+        # type: (Coordinates) -> bool
         raise NotImplementedError()
 
     def __eq__(self, other):
-        # type: (Vector) -> bool
-        """Check vectors equality using `is_almost_equal_to()` method
-        with the default tolerance.
+        # type: (Coordinates) -> bool
+        """Check coordinates equality using `almost_equal_to()` method
+        with the default Revit tolerance.
 
-        For more precise equality, use `is_are_numbers_close_to()`
+        For more precise equality, use `almost_equal_to()`
         with specified tolerance.
         """
-        return self.is_almost_equal_to(other)
+        return self.almost_equal_to(other)
 
     def __ne__(self, other):
-        # type: (Vector) -> bool
+        # type: (Coordinates) -> bool
         return not self.__eq__(other)
 
     def __gt__(self, other):
-        # type: (Vector) -> bool
+        # type: (Coordinates) -> bool
         return not self.__lt__(other) and self.__ne__(other)
 
     def __le__(self, other):
-        # type: (Vector) -> bool
+        # type: (Coordinates) -> bool
         return self.__lt__(other) or self.__eq__(other)
 
     def __ge__(self, other):
-        # type: (Vector) -> bool
+        # type: (Coordinates) -> bool
         return not self.__lt__(other)
 
-    def to_vector(self):
-        raise NotImplementedError()
-
-    def to_point(self):
-        raise NotImplementedError()
-
-    def is_almost_equal_to(self, other, tolerance=None):
-        # type: (Vector, float) -> bool
-        """Checks whether this vector and other vector are the same
+    def almost_equal_to(self, other, tolerance=None):
+        # type: (Coordinates, float) -> bool
+        """Checks whether these coordinates and other coordinates are the same
         withing a specified tolerance.
 
         If no tolerance specified, used Revit default tolerance
-        of vectors comparison.
+        of coordinates comparison.
         """
         if tolerance is not None:
             return self._rvt_obj.IsAlmostEqualTo(other._rvt_obj, tolerance)
         return self._rvt_obj.IsAlmostEqualTo(other._rvt_obj)
 
     def distance_to(self, other):
-        # type: (Vector) -> float
+        # type: (Coordinates) -> float
+        """Returns the distance from these coordinates
+        to the specified coordinates.
+        """
         return self._rvt_obj.DistanceTo(other._rvt_obj)
 
     def dot_product(self, other):
-        # type: (Vector) -> float
+        # type: (Coordinates) -> float
+        """The dot product of vector with these coordinates
+        and the vector of other coordinates."""
         return self._rvt_obj.DotProduct(other._rvt_obj)
 
     def cross_product(self, other):
-        # type: (Vector) -> Vector
+        # type: (Coordinates) -> Coordinates
+        """The cross product of vector with these coordinates
+        and the vector of other coordinates."""
         return self._wrap(
             self._rvt_obj.CrossProduct(other._rvt_obj)
         )
 
+    def add(self, other):
+        # type: (Coordinates) -> Coordinates
+        """Adds other coordinates to self."""
+        return self._wrap(
+            self._rvt_obj.Add(other._rvt_obj)
+        )
+
+    def substract(self, other):
+        # type: (Coordinates) -> Coordinates
+        """Subtracts other coordinates from self."""
+        return self._wrap(
+            self._rvt_obj.Subtract(other._rvt_obj)
+        )
+
     def multiply(self, other):
-        # type: (float) -> Vector
+        # type: (float) -> Coordinates
+        """Multiples coordinates by a factor."""
         return self._wrap(
             self._rvt_obj.Multiply(other._rvt_obj)
         )
 
+    def negate(self):
+        """Negates the coordinates."""
+        return self._wrap(
+            self._rvt_obj.Negate()
+        )
+
     def _wrap(self, rvt_obj):
-        # type: (AbstractRevitCoordinates) -> Vector
+        # type: (AbstractRevitCoordinates) -> Coordinates
+        """Wraps Revit object to self."""
         return self.__class__(rvt_obj)
 
     @property
@@ -159,18 +168,19 @@ class Vector(GeometryEntity):
 
     @property
     def origin(self):
-        """A vector of all zero coordinates."""
+        """Zero coordinates."""
         return self._wrap(self._rvt_obj.Zero)
 
     @property
-    def is_zero(self):
+    def is_zero_length(self):
         # type: () -> bool
-        """True if every coordinate is zero, False otherwise"""
+        """True if every coordinate is zero within Revit tolerance."""
         return self._rvt_obj.IsZeroLength()
 
 
-class Vector2D(Vector):
-    """Vector in a 2-dimensional space."""
+class Coordinates2D(Coordinates):
+    """Coordinates representing a vector or a point in a 2-dimensional space.
+    """
 
     def __init__(self, revit_uv):
         # type: (AbstractRevitUV) -> None
@@ -179,10 +189,10 @@ class Vector2D(Vector):
                              self._rvt_obj.V)
 
     def __lt__(self, other):
-        # type: (Vector) -> bool
-        """Is vector smaller than other.
+        # type: (Coordinates) -> bool
+        """Are these coordinates smaller than other.
 
-        Used first method from here:
+        Using lexicographic ordering:
         https://math.stackexchange.com/a/54657
 
         p1.x < p2.x
@@ -201,9 +211,6 @@ class Vector2D(Vector):
 
         return False
 
-    def to_point(self):
-        return Point2D(self._rvt_obj)
-
     @property
     def x(self):
         # type: () -> float
@@ -215,8 +222,9 @@ class Vector2D(Vector):
         return self._rvt_obj.V
 
 
-class Vector3D(Vector):
-    """Vector in a 3-dimensional space."""
+class Coordinates3D(Coordinates):
+    """Coordinates representing a vector or a point in a 3-dimensional space.
+    """
 
     def __init__(self, revit_xyz):
         # type: (AbstractRevitXYZ) -> None
@@ -226,10 +234,10 @@ class Vector3D(Vector):
                              self._rvt_obj.Z)
 
     def __lt__(self, other):
-        # type: (Vector) -> bool
-        """Is self smaller than other.
+        # type: (Coordinates) -> bool
+        """Are these coordinates smaller than other.
 
-        Used first method from here:
+        Using lexicographic ordering:
         https://math.stackexchange.com/a/54657
 
         p1.x < p2.x
@@ -254,9 +262,6 @@ class Vector3D(Vector):
 
         return False
 
-    def to_point(self):
-        return Point3D(self._rvt_obj)
-
     @property
     def x(self):
         # type: () -> float
@@ -271,17 +276,3 @@ class Vector3D(Vector):
     def z(self):
         # type: () -> float
         return self._rvt_obj.Z
-
-
-class Point2D(Vector2D):
-    """Point in a 2-dimensional space."""
-
-    def to_vector(self):
-        return Vector2D(self._rvt_obj)
-
-
-class Point3D(Vector3D):
-    """Point in a 3-dimensional space."""
-
-    def to_vector(self):
-        return Vector3D(self._rvt_obj)

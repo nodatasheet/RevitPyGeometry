@@ -24,6 +24,11 @@ class AbstractRevitCoordinates(AbstractRevitObject):
         pass
 
     @abstractmethod
+    def GetLength(self):
+        # type: (AbstractRevitCoordinates) -> float
+        pass
+
+    @abstractmethod
     def Divide(self, value):
         # type: (float) -> AbstractRevitCoordinates
         pass
